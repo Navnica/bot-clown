@@ -1,0 +1,4 @@
+pytelegrambotapi
+requests
+beautifulsoup4
+cowsay
