@@ -1,0 +1,4 @@
+pyTelegramBotAPI==4.7.1
+requests==2.28.1
+beautifulsoup4==4.11.1
+cowsay==5.0
