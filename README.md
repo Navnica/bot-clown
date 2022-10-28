@@ -24,6 +24,7 @@ With the help of latest gen technologies
 
 ```
 git clone https://github.com/TruEn0t/bot-clown.git
+cd bot-clown
 pip3 install -r requirements.txt
 python3 main.py
 ```
