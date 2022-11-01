@@ -20,6 +20,8 @@ With the help of the latest gen technologies
 | cowsay 5.0             | https://pypi.org/project/cowsay/5.0             |
 | requests 2.28.1        | https://pypi.org/project/requests/2.28.1        |
 | peewee 3.15.3          | https://pypi.org/project/peewee/3.15.3          |
+| fire 0.4.0             | https://pypi.org/project/fire/0.4.0/            |
+| tabulate 0.9.0         | https://pypi.org/project/tabulate/0.9.0/        |
 
 ## Running
 

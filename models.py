@@ -3,21 +3,31 @@ import peewee
 db = peewee.SqliteDatabase('database.db')
 
 
-class JokeCategory(peewee.Model):
-    category_id = peewee.IntegerField(null=False)
-    category_name = peewee.CharField(null=False)
-    url = peewee.Еуче
-
+class BaseModel(peewee.Model):
     class Meta:
         database = db
 
 
-class User(peewee.Model):
+class JokeCategory(BaseModel):
+    name = peewee.CharField(null=False)
+    url = peewee.CharField()
+
+    def __str__(self):
+        return self.name
+
+
+class User(BaseModel):
     telegram_id = peewee.IntegerField(null=False)
-    message_id = peewee.IntegerField(null=False)
-    category = peewee.ForeignKeyField(JokeCategory, related_name='category_id')
-
-    class Meta:
-        database = db
+    message_id = peewee.IntegerField(null=True, default=None)
+    category = peewee.ForeignKeyField(JokeCategory, related_name='category_id', null=True, default=None)
 
 
+class Joke(BaseModel):
+    category_id = peewee.ForeignKeyField(JokeCategory, related_name='category_id')
+    text = peewee.TextField()
+    rating = peewee.IntegerField(default=0)
+
+
+JokeCategory.create_table()
+User.create_table()
+Joke.create_table()
