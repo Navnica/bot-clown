@@ -1,14 +1,18 @@
 import models
 import tabulate
-import jokemanager
+import parser
+import random
 
 
 class CategoryManager:
-    def __init__(self, category_id) -> None:
+    def __init__(self, category_id=None) -> None:
         self.category: models.JokeCategory = models.JokeCategory.get_or_none(models.JokeCategory.id == category_id)
 
     def add(self, name: str, url: str) -> None:
         models.JokeCategory.create(name=name, url=url).save()
+
+    def get(self) -> models.JokeCategory:
+        return self.category
 
     def remove(self) -> None:
         self.category.delete_instance()
@@ -16,8 +20,14 @@ class CategoryManager:
     def show_all(self) -> None:
         print(tabulate.tabulate(models.JokeCategory.select().dicts()))
 
+    def random_joke(self) -> models.Joke:
+        return random.choice(models.Joke.select().where(models.Joke.category_id == self.category))
+
+    def list(self):
+        return models.JokeCategory.select()
+
     def dump(self) -> None:
-        jokes = jokemanager.parse_all_jokes(self.category.url)
+        jokes = parser.parse_all_jokes(self.category.url)
 
         for joke in jokes:
             JokeManager(joke['data_id']).remove()

@@ -1,14 +1,12 @@
-import json
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-
+import service_class
 
 def get_select_category_markup() -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup()
 
-    categories = json.load(open('config.json', encoding='utf-8'))['category']
-    for category in categories:
+    for category in service_class.CategoryManager().list():
         keyboard.add(
-            InlineKeyboardButton(text=category, callback_data=category)
+            InlineKeyboardButton(text=category.name, callback_data=f'category_{category.id}')
         )
 
     return keyboard
