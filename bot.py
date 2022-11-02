@@ -5,6 +5,7 @@ import userworker
 import keyboards
 import anekmanage
 import cowsay
+import service_class
 
 config = json.load(open('config.json', encoding='utf-8'))
 bot = telebot.TeleBot(config['token'])
@@ -12,11 +13,12 @@ bot = telebot.TeleBot(config['token'])
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message) -> None:
-    user_worker = userworker.UserWorker(message.from_user.id)
-    if not user_worker.user_registered():
-        user_worker.register_user()
+    user_manager = service_class.UserManager(message.from_user.id)
 
-    bot.send_message(chat_id=message.from_user.id, text='👉👈🥺', reply_markup=keyboards.get_select_category_markup())
+    if user_manager.get() is None:
+        user_manager.add()
+
+    #bot.send_message(chat_id=message.from_user.id, text='👉👈🥺', reply_markup=keyboards.get_select_category_markup())
     print(cowsay.get_output_string(random.choice(cowsay.char_names), f'{message.from_user.id} : {message.text}'))
 
 

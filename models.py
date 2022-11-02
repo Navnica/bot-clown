@@ -24,8 +24,9 @@ class User(BaseModel):
 
 class Joke(BaseModel):
     category_id = peewee.ForeignKeyField(JokeCategory, related_name='category_id')
-    text = peewee.TextField()
-    rating = peewee.IntegerField(default=0)
+    text = peewee.TextField(null=False)
+    rating = peewee.IntegerField(null=False)
+    data_id = peewee.IntegerField(null=False)
 
 
 JokeCategory.create_table()

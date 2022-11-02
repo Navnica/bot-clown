@@ -1,65 +1,83 @@
 import models
 import tabulate
+import jokemanager
 
 
 class CategoryManager:
     def __init__(self, category_id) -> None:
-        self.category_id: models.JokeCategory = category_id
+        self.category: models.JokeCategory = models.JokeCategory.get_or_none(models.JokeCategory.id == category_id)
 
-    def add_category(self, name: str, url: str) -> None:
+    def add(self, name: str, url: str) -> None:
         models.JokeCategory.create(name=name, url=url).save()
 
-    def del_category(self) -> None:
-        models.JokeCategory.get(models.JokeCategory.id == self.category_id).delete_instance()
+    def remove(self) -> None:
+        self.category.delete_instance()
 
-    def show_all_category(self) -> None:
+    def show_all(self) -> None:
         print(tabulate.tabulate(models.JokeCategory.select().dicts()))
+
+    def dump(self) -> None:
+        jokes = jokemanager.parse_all_jokes(self.category.url)
+
+        for joke in jokes:
+            JokeManager(joke['data_id']).remove()
+            JokeManager().add(
+                category=self.category,
+                text=joke['text'],
+                rating=joke['rating'],
+                data_id=joke['data_id']
+            )
 
 
 class JokeManager:
-    def __init__(self, joke_id) -> None:
-        self.joke_id: models.Joke = joke_id
+    def __init__(self, joke_id=None) -> None:
+        self.joke: models.Joke = models.Joke.get_or_none(models.Joke.data_id == joke_id)
 
-    def add_joke(self, category_id: models.JokeCategory, text: str) -> None:
-        models.Joke.create(category_id=category_id, text=text)
+    def add(self, category: models.JokeCategory, text: str, rating: int, data_id: int) -> None:
+        models.Joke.create(
+            category_id=category.id,
+            text=text,
+            rating=rating,
+            data_id=data_id
+        )
 
-    def del_joke(self) -> None:
-        models.Joke.get(models.Joke.id == self.joke_id)
+    def remove(self) -> None:
+        if self.joke is None:
+            return None
 
-    def get_joke(self) -> models.Joke:
-        return models.Joke.get(models.Joke.id == self.joke_id)
+        self.joke.delete_instance()
 
-    def get_joke_information(self) -> None:
-        joke = models.Joke.get(models.Joke.id == self.joke_id)
-        print(tabulate.tabulate([joke.id, joke.text, joke.rating], headers=['id', 'text', 'rating']))
+    def get(self) -> models.Joke:
+        return self.joke
 
-    def change_joke_rating(self, update: int) -> None:
-        joke = models.Joke.get(models.Joke.id == self.joke_id)
-        joke.rating += update
-        joke.save()
+    def get_information(self) -> None:
+        print(tabulate.tabulate([self.joke.id, self.joke.text, self.joke.rating], headers=['id', 'text', 'rating']))
+
+    def change_rating(self, new_rating: int) -> None:
+        self.joke.rating += new_rating
+        self.joke.save()
 
 
 class UserManager:
-    def __init__(self, user_id) -> None:
+    def __init__(self, user_id=None) -> None:
+        self.user = models.User.get_or_none(models.User.telegram_id == user_id)
         self.user_id = user_id
 
-    def add_user(self) -> None:
+    def add(self) -> None:
         models.User.create(telegram_id=self.user_id)
 
     def set_category(self, category: models.JokeCategory):
-        user = models.User.get(models.User.telegram_id == self.user_id)
-        user.category = category
-        user.save()
+        self.user.category = category
+        self.user.save()
 
     def set_message(self, message_id: int) -> None:
-        user = models.User.get(models.User.telegram_id == self.user_id)
-        user.message_id = message_id
-        user.save()
+        self.user.message_id = message_id
+        self.user.save()
 
-    def get_user(self) -> models.User:
-        return models.User.get(models.User.telegram_id == self.user_id)
+    def get(self) -> models.User:
+        return self.user
 
-    def show_all_users(self):
+    def show_all(self):
         print(tabulate.tabulate(models.User.select().dicts()))
 
 
