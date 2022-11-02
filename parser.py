@@ -14,14 +14,12 @@ def parse_all_jokes(category: str) -> list:
 
         for joke in jokes:
             text = joke.find('div', class_='text')
-            rating = joke.find('div', class_='rates')
 
             if text is None:
                 continue
 
             joke_list.append({
-                'text': text.text,
-                'rating': int(rating['data-r'].split(';')[0]),
+                'text': BeautifulSoup(str(text).replace('<br/>', '\n'), 'html.parser').text,
                 'data_id': int(joke['data-id'])
             })
 

@@ -1,6 +1,7 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import service_class
 
+
 def get_select_category_markup() -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup()
 
@@ -12,12 +13,15 @@ def get_select_category_markup() -> InlineKeyboardMarkup:
     return keyboard
 
 
-def get_default_markup() -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardMarkup()
+def get_default_markup(joke) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup(row_width=2)
 
     keyboard.add(
         InlineKeyboardButton(text='Дропни анек', callback_data='drop'),
-        InlineKeyboardButton(text='Сменить категорию', callback_data='change_category')
+        InlineKeyboardButton(text='Сменить категорию', callback_data='change_category'),
+        InlineKeyboardButton(text=f'👍 {joke.rate_plus if joke.rate_plus != 0 else ""}', callback_data=f'rate_plus_{joke.id}'),
+        InlineKeyboardButton(text=f'👎 {joke.rate_minus if joke.rate_minus != 0 else ""}', callback_data=f'rate_minus_{joke.id}')
     )
 
     return keyboard
+

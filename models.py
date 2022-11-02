@@ -25,10 +25,18 @@ class User(BaseModel):
 class Joke(BaseModel):
     category_id = peewee.ForeignKeyField(JokeCategory, related_name='category_id')
     text = peewee.TextField(null=False)
-    rating = peewee.IntegerField(null=False)
+    rate_plus = peewee.IntegerField(default=0)
+    rate_minus = peewee.IntegerField(default=0)
     data_id = peewee.IntegerField(null=False)
+
+
+class JokeRating(BaseModel):
+    joke_id = peewee.ForeignKeyField(Joke, null=False, related_name='joke_id')
+    user_id = peewee.ForeignKeyField(User, null=False, related_name='user_id')
+    rate_plus = peewee.BooleanField(null=False)
 
 
 JokeCategory.create_table()
 User.create_table()
 Joke.create_table()
+JokeRating.create_table()

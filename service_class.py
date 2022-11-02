@@ -8,8 +8,11 @@ class CategoryManager:
     def __init__(self, category_id=None) -> None:
         self.category: models.JokeCategory = models.JokeCategory.get_or_none(models.JokeCategory.id == category_id)
 
-    def add(self, name: str, url: str) -> None:
-        models.JokeCategory.create(name=name, url=url).save()
+    def add(self, name: str, url: str, autodump=False) -> None:
+        self.category = models.JokeCategory.create(name=name, url=url)
+        self.category.save()
+        if autodump:
+            self.dump()
 
     def get(self) -> models.JokeCategory:
         return self.category
@@ -34,20 +37,18 @@ class CategoryManager:
             JokeManager().add(
                 category=self.category,
                 text=joke['text'],
-                rating=joke['rating'],
                 data_id=joke['data_id']
             )
 
 
 class JokeManager:
     def __init__(self, joke_id=None) -> None:
-        self.joke: models.Joke = models.Joke.get_or_none(models.Joke.data_id == joke_id)
+        self.joke: models.Joke = models.Joke.get_or_none(models.Joke.id == joke_id)
 
-    def add(self, category: models.JokeCategory, text: str, rating: int, data_id: int) -> None:
+    def add(self, category: models.JokeCategory, text: str, data_id: int) -> None:
         models.Joke.create(
             category_id=category.id,
             text=text,
-            rating=rating,
             data_id=data_id
         )
 
@@ -63,8 +64,12 @@ class JokeManager:
     def get_information(self) -> None:
         print(tabulate.tabulate([self.joke.id, self.joke.text, self.joke.rating], headers=['id', 'text', 'rating']))
 
-    def change_rating(self, new_rating: int) -> None:
-        self.joke.rating += new_rating
+    def rate_plus(self) -> None:
+        self.joke.rate_plus += 1
+        self.joke.save()
+
+    def rate_minus(self) -> None:
+        self.joke.rate_minus += 1
         self.joke.save()
 
 
@@ -91,8 +96,27 @@ class UserManager:
         print(tabulate.tabulate(models.User.select().dicts()))
 
 
+class RateManager:
+    def __init__(self, rate_id=None) -> None:
+        self.rate = models.JokeRating.get_or_none(models.JokeRating.id == rate_id)
+
+    def add(self, user_id, joke, rate_plus) -> None:
+        models.JokeRating.create(
+            joke_id=models.Joke.get(models.Joke.id == joke),
+            user_id=models.User.get(models.User.telegram_id == user_id),
+            rate_plus=rate_plus
+        )
+
+        manager = JokeManager(joke.id)
+        manager.rate_plus() if rate_plus else manager.rate_minus()
+
+    def get(self) -> models.JokeRating:
+        return self.rate
+
+
 class Service:
-    def __init__(self, category_id=None, joke_id=None, user_id=None) -> None:
+    def __init__(self, category_id=None, joke_id=None, user_id=None, rate_id=None) -> None:
         self.category = CategoryManager(category_id)
         self.joke = JokeManager(joke_id)
         self.user = UserManager(user_id)
+        self.rate = RateManager(rate_id)
