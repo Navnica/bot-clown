@@ -2,8 +2,6 @@ import models
 import tabulate
 import parser
 import random
-from os import remove
-import json
 
 
 class CategoryManager:
@@ -11,8 +9,7 @@ class CategoryManager:
         self.category: models.JokeCategory = models.JokeCategory.get_or_none(models.JokeCategory.id == category_id)
 
     def add(self, name: str, url: str, autodump=False) -> None:
-        self.category = models.JokeCategory.create(name=name, url=url)
-        self.category.save()
+        self.category = models.JokeCategory.get_or_create(name=name, url=url)[0]
         if autodump:
             self.dump()
 
@@ -35,12 +32,14 @@ class CategoryManager:
         jokes = parser.parse_all_jokes(self.category.url)
 
         for joke in jokes:
-            JokeManager(joke['data_id']).remove()
-            JokeManager().add(
-                category=self.category,
-                text=joke['text'],
-                data_id=joke['data_id']
-            )
+            try:
+                JokeManager().add(
+                    category=self.category,
+                    text=joke['text'],
+                    data_id=joke['data_id']
+                )
+            except:
+                print('Анекдот уже есть в базе. Пропуск')
 
 
 class JokeManager:
@@ -48,7 +47,7 @@ class JokeManager:
         self.joke: models.Joke = models.Joke.get_or_none(models.Joke.id == joke_id)
 
     def add(self, category: models.JokeCategory, text: str, data_id: int) -> None:
-        models.Joke.create(
+        self.joke = models.Joke.get_or_create(
             category_id=category.id,
             text=text,
             data_id=data_id
@@ -72,6 +71,16 @@ class JokeManager:
 
     def rate_minus(self) -> None:
         self.joke.rate_minus += 1
+        self.joke.save()
+
+    def rerate(self, rate_plus):
+        if rate_plus:
+            self.joke.rate_plus += 1
+            self.joke.rate_minus -= 1
+        else:
+            self.joke.rate_plus -= 1
+            self.joke.rate_minus += 1
+
         self.joke.save()
 
 
@@ -109,21 +118,28 @@ class RateManager:
         self.rate = models.JokeRating.get_or_none(models.JokeRating.id == rate_id)
 
     def add(self, user_id, joke_id, rate_plus) -> int:
-        user_vote = models.JokeRating.get_or_none(
+        self.rate = models.JokeRating.get_or_none(
             models.JokeRating.joke_id == JokeManager(joke_id).get(),
             models.JokeRating.user_id == UserManager(user_id).get())
 
-        if user_vote:
-            return 0
-
-        models.JokeRating.create(
-            joke_id=models.Joke.get(models.Joke.id == joke_id),
-            user_id=models.User.get(models.User.telegram_id == user_id),
-            rate_plus=rate_plus
-        )
-
         manager = JokeManager(joke_id)
-        manager.rate_plus() if rate_plus else manager.rate_minus()
+
+        if self.rate:
+            if self.rate.rate_plus != rate_plus:
+                manager.rerate(rate_plus) 
+                self.rate.rate_plus = rate_plus
+                self.rate.save()
+            else:
+                return 0
+
+        else:                
+            models.JokeRating.create(
+                joke_id=models.Joke.get(models.Joke.id == joke_id),
+                user_id=models.User.get(models.User.telegram_id == user_id),
+                rate_plus=rate_plus
+            )
+
+            manager.rate_plus() if rate_plus else manager.rate_minus()
 
     def get(self) -> models.JokeRating:
         return self.rate

@@ -9,8 +9,8 @@ class BaseModel(peewee.Model):
 
 
 class JokeCategory(BaseModel):
-    name = peewee.CharField(null=False)
-    url = peewee.CharField()
+    name = peewee.CharField(null=False, unique=True)
+    url = peewee.CharField(null=False, unique=True)
 
     def __str__(self):
         return self.name
@@ -24,7 +24,7 @@ class User(BaseModel):
 
 class Joke(BaseModel):
     category_id = peewee.ForeignKeyField(JokeCategory, related_name='category_id')
-    text = peewee.TextField(null=False)
+    text = peewee.TextField(null=False, unique=True)
     rate_plus = peewee.IntegerField(default=0)
     rate_minus = peewee.IntegerField(default=0)
     data_id = peewee.IntegerField(null=False)

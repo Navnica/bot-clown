@@ -3,9 +3,8 @@ import random
 import telebot
 import keyboards
 import cowsay
-
-import models
 import service_class
+
 
 config = json.load(open('config.json', encoding='utf-8'))
 bot = telebot.TeleBot(config['token'])
