@@ -2,6 +2,8 @@ import models
 import tabulate
 import parser
 import random
+from os import remove
+import json
 
 
 class CategoryManager:
@@ -81,6 +83,12 @@ class UserManager:
     def add(self) -> None:
         models.User.create(telegram_id=self.user_id)
 
+    def remove(self) -> None:
+        if self.user is None:
+            return None
+
+        self.user.delete_instance()
+
     def set_category(self, category: models.JokeCategory):
         self.user.category = category
         self.user.save()
@@ -100,14 +108,21 @@ class RateManager:
     def __init__(self, rate_id=None) -> None:
         self.rate = models.JokeRating.get_or_none(models.JokeRating.id == rate_id)
 
-    def add(self, user_id, joke, rate_plus) -> None:
+    def add(self, user_id, joke_id, rate_plus) -> int:
+        user_vote = models.JokeRating.get_or_none(
+            models.JokeRating.joke_id == JokeManager(joke_id).get(),
+            models.JokeRating.user_id == UserManager(user_id).get())
+
+        if user_vote:
+            return 0
+
         models.JokeRating.create(
-            joke_id=models.Joke.get(models.Joke.id == joke),
+            joke_id=models.Joke.get(models.Joke.id == joke_id),
             user_id=models.User.get(models.User.telegram_id == user_id),
             rate_plus=rate_plus
         )
 
-        manager = JokeManager(joke.id)
+        manager = JokeManager(joke_id)
         manager.rate_plus() if rate_plus else manager.rate_minus()
 
     def get(self) -> models.JokeRating:
@@ -115,8 +130,11 @@ class RateManager:
 
 
 class Service:
-    def __init__(self, category_id=None, joke_id=None, user_id=None, rate_id=None) -> None:
+    def __init__(self, category_id=None, joke_id=None, user_id=None, rate_id=None, db='database.db') -> None:
         self.category = CategoryManager(category_id)
         self.joke = JokeManager(joke_id)
         self.user = UserManager(user_id)
         self.rate = RateManager(rate_id)
+
+    def wtf(self):
+        print(open('wtf.txt').read())

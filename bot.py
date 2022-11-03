@@ -57,11 +57,8 @@ def callback_worker(call):
         rate_plus = call.data.startswith('rate_plus')
         joke = service_class.JokeManager(int(call.data.replace('rate_plus_' if rate_plus else 'rate_minus_', ''))).get()
 
-        service_class.RateManager().add(
-            user_id=call.from_user.id,
-            joke=joke,
-            rate_plus=rate_plus
-        )
+        if service_class.RateManager().add(user_id=call.from_user.id, joke_id=joke.id, rate_plus=rate_plus) == 0:
+            return
 
         bot.edit_message_text(
             text=joke.text,

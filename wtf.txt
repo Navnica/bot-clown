@@ -1,0 +1,12 @@
+category:
+	add [--name, --url, --autodump] - add a category
+	remove [--category_id] - remove a category
+	dump [--category_id] - command to parce jokes with category
+	show_all - shows all categories in the database
+user:
+	add [--telegram_id] - add a user
+	show_all - shows all users in database
+	remove [--telegram_id] - remove a user
+
+
+This is only a small part necessary for the maintenance of the bot. You can see a lot more different functions to use inside the code if you study service_class.
