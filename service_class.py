@@ -145,12 +145,30 @@ class RateManager:
         return self.rate
 
 
+class UserStepManager:
+    def __init__(self, user_id=None) -> None:
+        self.user_step = models.UserStep.get_or_none(models.UserStep.user_id == UserManager(user_id).get())
+
+    def add(self, user_id, step) -> None:
+        models.UserStep.create(user_id=UserManager(user_id).get(), step=step)
+
+    def get(self) -> models.UserStep:
+        return self.user_step
+
+    def remove(self) -> None:
+        self.user_step.delete_instance()
+
+    def change_step(self, step) -> None:
+        self.user_step.step = step
+
+
 class Service:
     def __init__(self, category_id=None, joke_id=None, user_id=None, rate_id=None, db='database.db') -> None:
         self.category = CategoryManager(category_id)
         self.joke = JokeManager(joke_id)
         self.user = UserManager(user_id)
         self.rate = RateManager(rate_id)
+        self.stepmanager = UserStepManager(user_id)
 
     def wtf(self):
         print(open('wtf.txt').read())

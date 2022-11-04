@@ -36,7 +36,13 @@ class JokeRating(BaseModel):
     rate_plus = peewee.BooleanField(null=False)
 
 
+class UserStep(BaseModel):
+    user_id = peewee.ForeignKeyField(User, null=False, related_name='user_id', unique=True)
+    step = peewee.CharField(default="none")
+
+
 JokeCategory.create_table()
 User.create_table()
 Joke.create_table()
 JokeRating.create_table()
+UserStep.create_table()

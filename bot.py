@@ -12,17 +12,22 @@ bot = telebot.TeleBot(config['token'])
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message) -> None:
+    print(cowsay.get_output_string(random.choice(cowsay.char_names), f'{message.from_user.id} : {message.text}'))
     user_manager = service_class.UserManager(message.from_user.id)
+    user_step = service_class.UserStepManager(message.from_user.id)
+
 
     if user_manager.get() is None:
         user_manager.add()
+
+    if user_step.get() != None:
+        if user_step.get().step == 'waiting_for_joke':
+            user_step.change_step('none')
 
     bot.send_message(
         chat_id=message.from_user.id,
         text='👉👈🥺',
         reply_markup=keyboards.get_select_category_markup())
-
-    print(cowsay.get_output_string(random.choice(cowsay.char_names), f'{message.from_user.id} : {message.text}'))
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -44,7 +49,7 @@ def callback_worker(call):
         user_manager.set_category(category_id)
         call.data = 'drop'
 
-    if call.data == 'drop':
+    if call.data == 'drop' or call.data == 'back':
         random_joke = service_class.CategoryManager(user_manager.get().category).random_joke()
         bot.edit_message_text(
             text=random_joke.text,
@@ -64,6 +69,16 @@ def callback_worker(call):
             chat_id=call.from_user.id,
             message_id=user_manager.get().message_id,
             reply_markup=keyboards.get_default_markup(service_class.JokeManager(joke_id=joke.id).get()))
+
+    if call.data == 'add_user_joke':
+        bot.edit_message_text(
+            text='Все анекдоты добавленные пользователями попадают в <b>Категорию Б</b>',
+            chat_id=call.from_user.id,
+            message_id=user_manager.get().message_id,
+            reply_markup=keyboards.get_markup_back(),
+            parse_mode='html')
+
+        service_class.UserStepManager().add(call.from_user.id, 'waiting_for_joke')
 
 
 def start_polling():
