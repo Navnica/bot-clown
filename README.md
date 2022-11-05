@@ -29,6 +29,8 @@ With the help of the latest gen technologies
 The bot comes without a filled database, so before launching it, you MUST look through the Service section, add and dump at least one category
 How to make it read in [Service](#service)
 
+Add your token in config.json
+
 ```commandline
 git clone https://github.com/TruEn0t/bot-clown.git
 cd bot-clown

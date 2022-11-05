@@ -28,6 +28,9 @@ class CategoryManager:
     def list(self):
         return models.JokeCategory.select()
 
+    def get_by_name(self, name):
+        return models.JokeCategory.get_or_none(models.JokeCategory.name == name)
+
     def dump(self) -> None:
         jokes = parser.parse_all_jokes(self.category.url)
 
@@ -46,7 +49,7 @@ class JokeManager:
     def __init__(self, joke_id=None) -> None:
         self.joke: models.Joke = models.Joke.get_or_none(models.Joke.id == joke_id)
 
-    def add(self, category: models.JokeCategory, text: str, data_id: int) -> None:
+    def add(self, category: models.JokeCategory, text: str, data_id: int = None) -> None:
         self.joke = models.Joke.get_or_create(
             category_id=category.id,
             text=text,
@@ -160,6 +163,7 @@ class UserStepManager:
 
     def change_step(self, step) -> None:
         self.user_step.step = step
+        self.user_step.save()
 
 
 class Service:

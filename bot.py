@@ -1,13 +1,11 @@
-import json
 import random
 import telebot
 import keyboards
 import cowsay
 import service_class
+import json
 
-
-config = json.load(open('config.json', encoding='utf-8'))
-bot = telebot.TeleBot(config['token'])
+bot = telebot.TeleBot(json.load(open('config.json', encoding='utf-8'))['token'])
 
 
 @bot.message_handler(content_types=['text'])
@@ -16,13 +14,15 @@ def get_text_messages(message) -> None:
     user_manager = service_class.UserManager(message.from_user.id)
     user_step = service_class.UserStepManager(message.from_user.id)
 
-
     if user_manager.get() is None:
         user_manager.add()
 
-    if user_step.get() != None:
+    if user_step.get() is not None:
         if user_step.get().step == 'waiting_for_joke':
             user_step.change_step('none')
+            service_class.CategoryManager().add(name='Категория Б', url='None')
+            service_class.JokeManager().add(category=service_class.CategoryManager().get_by_name('Категория Б'),
+                                            text=message.text)
 
     bot.send_message(
         chat_id=message.from_user.id,

@@ -27,7 +27,7 @@ class Joke(BaseModel):
     text = peewee.TextField(null=False, unique=True)
     rate_plus = peewee.IntegerField(default=0)
     rate_minus = peewee.IntegerField(default=0)
-    data_id = peewee.IntegerField(null=False)
+    data_id = peewee.IntegerField(null=True)
 
 
 class JokeRating(BaseModel):
